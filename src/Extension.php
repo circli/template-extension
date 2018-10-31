@@ -50,8 +50,8 @@ class Extension implements ExtensionInterface
                 get(JsonManifest::class),
                 get(Path::class)
             ),
-            TemplateInterface::class => function(ContainerInterface $container) {
-                $resolver = new Resolver(function ($cls) use ($container, $config) {
+            TemplateInterface::class => function(ContainerInterface $container) use ($config) {
+                $resolver = new Resolver(function ($cls) use ($container) {
                     return $container->get($cls);
                 });
                 $resolver->addNs('Blueprint\DesignHelper');
