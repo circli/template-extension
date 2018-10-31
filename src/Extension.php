@@ -51,11 +51,16 @@ class Extension implements ExtensionInterface
                 get(Path::class)
             ),
             TemplateInterface::class => function(ContainerInterface $container) {
-                $resolver = new Resolver(function ($cls) use ($container) {
+                $resolver = new Resolver(function ($cls) use ($container, $config) {
                     return $container->get($cls);
                 });
                 $resolver->addNs('Blueprint\DesignHelper');
-                $resolver->addNs('Artemis\TemplateHelper');
+
+                if (isset($config['template']['resolvers']) && \is_array($config['template']['resolvers'])) {
+                    foreach ($config['template']['resolvers'] as $resolverNs) {
+                        $resolver->addNs($resolverNs);
+                    }
+                }
 
                 $template = new Extended(
                     $container->get(Finder::class),
