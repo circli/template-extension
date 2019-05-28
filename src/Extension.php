@@ -2,8 +2,12 @@
 
 namespace Circli\Extensions\Template;
 
+use Blueprint\ActusFinder;
+use Blueprint\Helper\ResolverInterface;
+use Blueprint\Layout;
 use Circli\Contracts\ExtensionInterface;
 use Circli\Contracts\PathContainer;
+use function DI\autowire;
 use function DI\create;
 use function DI\get;
 use Blueprint\Assets\Finder;
@@ -35,7 +39,14 @@ class Extension implements ExtensionInterface
 
         return [
             //Template finder
-            FinderInterface::class => create(DefaultFinder::class)->constructor($config['template_paths']),
+            FinderInterface::class => function(ContainerInterface $container) use ($config) {
+                $templatePaths = new Path();
+                foreach ($config['actur_templates'] as $ns => $path) {
+                    $templatePaths->set($ns, $path);
+                }
+
+                return new TemplateFinder($templatePaths, $config['template_paths']);
+            },
             JsonManifest::class => create(JsonManifest::class)->constructor($config['asset_path'] . '/assets.json'),
             Path::class => function() use($config) {
                 $actus = new Path();
@@ -50,7 +61,7 @@ class Extension implements ExtensionInterface
                 get(JsonManifest::class),
                 get(Path::class)
             ),
-            TemplateInterface::class => static function(ContainerInterface $container) use ($config) {
+            ResolverInterface::class => static function(ContainerInterface $container) use ($config) {
                 $resolver = new Resolver(static function ($cls) use ($container) {
                     return $container->get($cls);
                 });
@@ -62,6 +73,21 @@ class Extension implements ExtensionInterface
                     }
                 }
 
+                return $resolver;
+            },
+            Layout::class => static function(ContainerInterface $container) use ($config) {
+                $resolver = $container->get(ResolverInterface::class);
+                $content = $container->get(TemplateInterface::class);
+                $layout = new Layout(
+                    $container->get(FinderInterface::class),
+                    new ResolverList([$resolver], true)
+                );
+                $layout->setContent($content);
+                $layout->setTemplate('layout/default.php');
+                return $layout;
+            },
+            TemplateInterface::class => static function(ContainerInterface $container) use ($config) {
+                $resolver = $container->get(ResolverInterface::class);
                 $template = new Extended(
                     $container->get(FinderInterface::class),
                     new ResolverList([$resolver], true)
