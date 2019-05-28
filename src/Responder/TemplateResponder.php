@@ -17,14 +17,17 @@ use Psr\Http\Message\ServerRequestInterface;
 abstract class TemplateResponder implements ResponderInterface
 {
     protected $payloadStatus;
+    /** @var TemplateInterface */
     protected $templateEngine;
     protected $attributeMap;
 
     protected $templateFile;
+
     /**
      * @var ResponseFactoryInterface
      */
     protected $responseFactory;
+
     /**
      * @var EventDispatcherInterface
      */
@@ -42,13 +45,18 @@ abstract class TemplateResponder implements ResponderInterface
         $this->eventDispatcher = $eventManager;
     }
 
+    protected function _render(string $templateFile, array $data): string
+    {
+        return $this->templateEngine->render($templateFile);
+    }
+
     public function render(string $templateFile, array $data, ServerRequestInterface $request): ResponseInterface
     {
-        $status = 200;
         $this->templateEngine->assign($data);
+        $status = 200;
 
         $this->eventDispatcher->dispatch(new PreRenderEvent($this->templateEngine, $templateFile, $status, $request));
-        $html = $this->templateEngine->render($templateFile);
+        $html = $this->_render($templateFile, $data);
         $response = $this->responseFactory->createResponse($status);
         $response = $response->withHeader('Content-Type', 'text/html; charset=utf-8');
         $response->getBody()->write($html);
