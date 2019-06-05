@@ -1,6 +1,6 @@
 <?php
 
-namespace Circli\Extensions\Template;
+namespace Circli\Extensions\Template\Responder;
 
 use Aura\Payload_Interface\PayloadInterface;
 use Psr\Http\Message\ResponseInterface;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Circli\Extensions\Template;
+namespace Circli\Extensions\Template\Responder;
 
 use Aura\Payload_Interface\PayloadInterface;
 use Aura\Payload_Interface\PayloadStatus;
@@ -23,14 +23,10 @@ abstract class TemplateResponder implements ResponderInterface
 
     protected $templateFile;
 
-    /**
-     * @var ResponseFactoryInterface
-     */
+    /** @var ResponseFactoryInterface */
     protected $responseFactory;
 
-    /**
-     * @var EventDispatcherInterface
-     */
+    /** @var EventDispatcherInterface */
     protected $eventDispatcher;
 
     public function __construct(

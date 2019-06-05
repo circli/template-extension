@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Circli\Extensions\Template;
+namespace Circli\Extensions\Template\Responder;
 
 use Blueprint\Layout;
 use Circli\Core\PayloadStatusToHttpStatus;
