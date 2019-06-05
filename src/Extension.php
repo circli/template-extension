@@ -2,18 +2,15 @@
 
 namespace Circli\Extensions\Template;
 
-use Blueprint\ActusFinder;
 use Blueprint\Helper\ResolverInterface;
 use Blueprint\Layout;
 use Circli\Contracts\ExtensionInterface;
 use Circli\Contracts\PathContainer;
-use function DI\autowire;
 use function DI\create;
 use function DI\factory;
 use function DI\get;
-use Blueprint\Assets\Finder;
+use Blueprint\Assets\Finder as AssetFinder;
 use Blueprint\Assets\JsonManifest;
-use Blueprint\DefaultFinder;
 use Blueprint\Extended;
 use Blueprint\FinderInterface;
 use Blueprint\Helper\Resolver;
@@ -22,7 +19,7 @@ use Blueprint\TemplateInterface;
 use Psr\Container\ContainerInterface;
 use Actus\Path;
 
-class Extension implements ExtensionInterface
+final class Extension implements ExtensionInterface
 {
     /**
      * @var PathContainer
@@ -37,28 +34,41 @@ class Extension implements ExtensionInterface
     public function configure(): array
     {
         $config = $this->paths->loadConfigFile('template');
+        $assets = $this->paths->loadConfigFile('assets');
 
         return [
             //Template finder
             FinderInterface::class => factory(function (ContainerInterface $container, $config) {
                     $templatePaths = new Path();
-                    foreach ($config['actur_templates'] as $ns => $path) {
+                    foreach ($config['actus_templates'] as $ns => $path) {
                         $templatePaths->set($ns, $path);
                     }
 
                     return new TemplateFinder($templatePaths, $config['template_paths']);
             })->parameter('config', $config),
             JsonManifest::class => create(JsonManifest::class)->constructor($config['asset_path'] . '/assets.json'),
-            Path::class => factory(function (ContainerInterface $container, $config) {
+            Path::class => factory(function (ContainerInterface $container, $config, $assets) {
                 $actus = new Path();
-                $actus->setRoot($this->paths->getBasePath());
+                $actus->setRoot($this->paths->getBasePath() . '/public');
                 $actus->set('svg', $config['asset_path'] . '/svg/');
                 $actus->set('images', $config['asset_path'] . '/images/');
                 $actus->set('style', $config['asset_path'] . '/styles/');
                 $actus->set('script', $config['asset_path'] . '/scripts/');
+
+                if ($assets && is_array($assets) && count($assets)) {
+                    foreach ($assets as $name => $types) {
+                        if (in_array('svg', $types, true)) {
+                            $actus->set('svg', $config['asset_path'] . '/svg/' . $name . '/', Path::MOD_APPEND);
+                        }
+                        if (in_array('images', $types, true)) {
+                            $actus->set('images', $config['asset_path'] . '/images/' . $name . '/', Path::MOD_APPEND);
+                        }
+                    }
+                }
+
                 return $actus;
-            })->parameter('config', $config),
-            Finder::class => create(Finder::class)->constructor(
+            })->parameter('config', $config)->parameter('assets', $assets),
+            AssetFinder::class => create(AssetFinder::class)->constructor(
                 get(JsonManifest::class),
                 get(Path::class)
             ),
