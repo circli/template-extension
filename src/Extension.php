@@ -46,9 +46,9 @@ final class Extension implements ExtensionInterface
                     return new TemplateFinder($templatePaths, $config['template_paths']);
             })->parameter('config', $config),
             JsonManifest::class => create(JsonManifest::class)->constructor($config['asset_path'] . '/assets.json'),
-            Path::class => factory(function (ContainerInterface $container, $config, $assets) {
+            Path::class => factory(static function (ContainerInterface $container, $config, $assets, $basePath) {
                 $actus = new Path();
-                $actus->setRoot($this->paths->getBasePath() . '/public');
+                $actus->setRoot($basePath . '/public');
                 $actus->set('svg', $config['asset_path'] . '/svg/');
                 $actus->set('images', $config['asset_path'] . '/images/');
                 $actus->set('style', $config['asset_path'] . '/styles/');
@@ -66,7 +66,10 @@ final class Extension implements ExtensionInterface
                 }
 
                 return $actus;
-            })->parameter('config', $config)->parameter('assets', $assets),
+            })
+                ->parameter('config', $config)
+                ->parameter('assets', $assets)
+                ->parameter('basePath', $this->paths->getBasePath()),
             AssetFinderInterface::class => create(AssetFinder::class)->constructor(
                 get(JsonManifest::class),
                 get(Path::class)
