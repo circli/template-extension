@@ -7,7 +7,7 @@ use Circli\Core\PayloadStatusToHttpStatus;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 
-class LayoutTemplateResponder extends TemplateResponder
+abstract class LayoutTemplateResponder extends TemplateResponder
 {
     /** @var Layout */
     private $layoutEngine;
@@ -20,7 +20,7 @@ class LayoutTemplateResponder extends TemplateResponder
         ResponseFactoryInterface $responseFactory,
         EventDispatcherInterface $eventManager
     ) {
-        parent::__construct($payloadStatus, $layout->getContent(), $responseFactory, $eventManager);
+        parent::__construct($payloadStatus, $layout, $responseFactory, $eventManager);
         $this->layoutEngine = $layout;
     }
 
