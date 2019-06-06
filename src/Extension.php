@@ -10,6 +10,7 @@ use function DI\create;
 use function DI\factory;
 use function DI\get;
 use Blueprint\Assets\Finder as AssetFinder;
+use Blueprint\Assets\FinderInterface as AssetFinderInterface;
 use Blueprint\Assets\JsonManifest;
 use Blueprint\Extended;
 use Blueprint\FinderInterface;
@@ -21,9 +22,7 @@ use Actus\Path;
 
 final class Extension implements ExtensionInterface
 {
-    /**
-     * @var PathContainer
-     */
+    /** @var PathContainer */
     protected $paths;
 
     public function __construct(PathContainer $paths)
@@ -68,7 +67,7 @@ final class Extension implements ExtensionInterface
 
                 return $actus;
             })->parameter('config', $config)->parameter('assets', $assets),
-            AssetFinder::class => create(AssetFinder::class)->constructor(
+            AssetFinderInterface::class => create(AssetFinder::class)->constructor(
                 get(JsonManifest::class),
                 get(Path::class)
             ),
