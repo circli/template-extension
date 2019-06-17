@@ -46,13 +46,13 @@ abstract class TemplateResponder implements ResponderInterface
         return $this->templateEngine->render($templateFile);
     }
 
-    public function render(string $templateFile, array $data, ServerRequestInterface $request): ResponseInterface
+    public function render(string $templateFile, $data, ServerRequestInterface $request): ResponseInterface
     {
         $this->templateEngine->assign($data);
         $status = 200;
 
         $this->eventDispatcher->dispatch(new PreRenderEvent($this->templateEngine, $templateFile, $status, $request));
-        $html = $this->_render($templateFile, $data);
+        $html = $this->_render($templateFile, (array)$data);
         $response = $this->responseFactory->createResponse($status);
         $response = $response->withHeader('Content-Type', 'text/html; charset=utf-8');
         $response->getBody()->write($html);

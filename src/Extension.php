@@ -37,14 +37,15 @@ final class Extension implements ExtensionInterface
 
         return [
             //Template finder
-            FinderInterface::class => factory(function (ContainerInterface $container, $config) {
-                    $templatePaths = new Path();
-                    foreach ($config['actus_templates'] as $ns => $path) {
-                        $templatePaths->set($ns, $path);
-                    }
+            TemplateFinder::class => factory(function (ContainerInterface $container, $config) {
+                $templatePaths = new Path();
+                foreach ($config['actus_templates'] as $ns => $path) {
+                    $templatePaths->set($ns, $path);
+                }
 
-                    return new TemplateFinder($templatePaths, $config['template_paths']);
+                return new TemplateFinder($templatePaths, $config['template_paths']);
             })->parameter('config', $config),
+            FinderInterface::class => get(TemplateFinder::class),
             JsonManifest::class => create(JsonManifest::class)->constructor($config['asset_path'] . '/assets.json'),
             Path::class => factory(static function (ContainerInterface $container, $config, $assets, $basePath) {
                 $actus = new Path();
